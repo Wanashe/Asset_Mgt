@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset_Mgt - AssetSync Portal</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --sidebar-width: 250px;
+            --header-height: 60px;
+            --bg-body: #f4f6f9;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --primary-blue: #0f172a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { display: flex; height: 100vh; background-color: var(--bg-body); color: var(--text-dark); }
+
+        /* Sidebar Styling */
+        aside {
+            width: var(--sidebar-width);
+            background: #ffffff;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            transition: margin-left 0.3s ease;
+        }
+
+        aside.collapsed {
+            margin-left: calc(-1 * var(--sidebar-width));
+        }
+
+        .brand-header {
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--primary-blue);
+            border-bottom: 1px solid var(--border-color);
+            gap: 10px;
+        }
+        .brand-header img.brand-logo {
+            height: 35px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .nav-menu { list-style: none; padding: 15px 0; overflow-y: auto; }
+        .nav-item a {
+            display: flex;
+            align-items: center;
+            padding: 12px 24px;
+            color: #475569;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: background 0.2s, color 0.2s;
+        }
+        .nav-item a:hover, .nav-item a.active {
+            background-color: #f1f5f9;
+            color: #2563eb;
+            font-weight: 600;
+        }
+        .nav-item i { width: 24px; margin-right: 12px; }
+
+        /* Main Workspace */
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+        /* Header Navigation */
+        header {
+            height: var(--header-height);
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 25px;
+        }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .toggle-btn { cursor: pointer; font-size: 1.1rem; color: var(--text-muted); transition: color 0.2s; }
+        .toggle-btn:hover { color: var(--text-dark); }
+
+        .search-box { position: relative; }
+        .search-box input {
+            padding: 7px 15px 7px 35px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            outline: none;
+            width: 250px;
+            font-size: 0.9rem;
+        }
+        .search-box i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+
+        .user-profile { display: flex; align-items: center; gap: 10px; color: var(--text-dark); font-weight: 500; }
+
+        main { flex: 1; padding: 30px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+
+    <!-- Persistent Sidebar -->
+    <aside id="sidebar">
+        <div class="brand-header">
+            <img src="https://www.zetdc.co.zw/wp-content/uploads/2022/09/website-logo2-4.png" alt="Logo" class="brand-logo">
+            <span>Asset Management</span>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="{% url 'assets:home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                    <i class="fa-solid fa-house"></i> Home
+                </a>
+            </li>
+            <!-- Updated: Replaced Business Applications with Asset Tables -->
+            <li class="nav-item">
+                <a href="{% url 'assets:asset_sync_workspace' %}" class="{% if request.resolver_match.url_name == 'asset_sync_workspace' or request.resolver_match.url_name == 'asset_add' or request.resolver_match.url_name == 'asset_edit' %}active{% endif %}">
+                    <i class="fa-solid fa-table-list"></i> Asset Tables
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'assets:reports_dashboard' %}" class="nav-link">
+                    <i class="fa-regular fa-file-lines"></i>Reports
+                </a>
+            </li>
+            <!-- <li class="nav-item">
+                <a href="#"><i class="fa-regular fa-circle-question"></i> Knowledge Centre</a>
+            </li>
+            <li class="nav-item">
+                <a href="#"><i class="fa-solid fa-sliders"></i> Processes and Procedures</a>
+            </li>
+            <li class="nav-item">
+                <a href="#"><i class="fa-regular fa-gem"></i> Competence Building</a>
+            </li>
+            <li class="nav-item">
+                <a href="#"><i class="fa-regular fa-envelope"></i> Inbox</a> -->
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Content Region -->
+    <div class="main-wrapper">
+        <header>
+            <div class="header-left">
+                <i class="fa-solid fa-bars toggle-btn" id="sidebarToggle"></i>
+                <span style="font-size: 0.9rem; color: var(--text-muted);">Corporate Business Portal</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Search...">
+                </div>
+                <div class="user-profile">
+                    <i class="fa-solid fa-circle-user fa-lg"></i>
+                    <span>User</span>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            {% block content %}
+            {% endblock %}
+        </main>
+    </div>
+
+    <!-- Toggle Sidebar Interaction -->
+    <script>
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+        });
+    </script>
+</body>
+</html>

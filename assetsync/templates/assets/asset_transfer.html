@@ -1,0 +1,100 @@
+{% extends 'assets/base.html' %}
+
+{% block content %}
+<div style="max-width: 700px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; border: 1px solid #e2e8f0;">
+    <h2 style="font-size: 1.5rem; color: #1e293b; margin-bottom: 5px;">Asset Movement &amp; Transfer Form</h2>
+    <p style="color: #64748b; margin-bottom: 25px; font-size: 0.9rem;">Record relocation, regional transfer, or user reassignment of ZESA corporate assets.</p>
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        <!-- Asset Selection -->
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">Select Asset to Transfer <span style="color: #dc2626;">*</span></label>
+            <select name="asset_id" required style="width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem; background: white;">
+                <option value="">-- Choose Asset --</option>
+                {% for a in assets %}
+                    <option value="{{ a.id }}" {% if selected_asset and selected_asset.id == a.id %}selected{% endif %}>
+                        {{ a.asset_tag }} {% if a.serial_number %}[S/N: {{ a.serial_number }}]{% endif %} - {{ a.name }} (Region: {{ a.region }}, Custodian: {{ a.assigned_to|default:"Unassigned" }})
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Row 1: Destination Region & Department -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">Destination Region <span style="color: #dc2626;">*</span></label>
+                <select name="to_region" required style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem; background: white;">
+                    {% if region_choices %}
+                        {% for key, val in region_choices %}
+                            <option value="{{ key }}" {% if selected_asset and selected_asset.region == key %}selected{% endif %}>{{ val }}</option>
+                        {% endfor %}
+                    {% else %}
+                        <option value="Harare">Harare Region (based in Harare)</option>
+                        <option value="Northern">Northern Region (based in Chinhoyi)</option>
+                        <option value="Southern">Southern Region (based in Gweru)</option>
+                        <option value="Eastern">Eastern Region (based in Mutare)</option>
+                        <option value="Western">Western Region (based in Bulawayo)</option>
+                    {% endif %}
+                </select>
+            </div>
+            <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">Destination Department <span style="color: #dc2626;">*</span></label>
+                <select name="to_department" required style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem; background: white;">
+                    {% if department_choices %}
+                        {% for key, val in department_choices %}
+                            <option value="{{ key }}" {% if selected_asset and selected_asset.department == key %}selected{% endif %}>{{ val }}</option>
+                        {% endfor %}
+                    {% else %}
+                        <option value="Administration">Administration</option>
+                        <option value="IT">IT</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Procurement">Procurement</option>
+                        <option value="HR">Human Resources (HR)</option>
+                        <option value="Operations">Operations &amp; Maintenance</option>
+                        <option value="Executive">Executive / Directorate</option>
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+
+        <!-- Row 2: Building Location & Office Number -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">Physical Building / Location</label>
+                <select name="to_location" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem; background: white;">
+                    <option value="">-- Select Building Location --</option>
+                    {% for loc in locations %}
+                        <option value="{{ loc.id }}" {% if selected_asset and selected_asset.current_location_id == loc.id %}selected{% endif %}>
+                            {{ loc.building }} - Floor {{ loc.floor }} (Room {{ loc.room_number }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">New Office Number</label>
+                <input type="text" name="to_office" value="{% if selected_asset %}{{ selected_asset.office_number|default:'' }}{% endif %}" placeholder="e.g. 204" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem;">
+            </div>
+        </div>
+
+        <!-- Row 3: New Custodian / User Name -->
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">New Custodian / User's Name</label>
+            <input type="text" name="to_person" value="{% if selected_asset %}{{ selected_asset.assigned_to|default:'' }}{% endif %}" placeholder="e.g. Tendai Moyo" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem;">
+        </div>
+
+        <!-- Reason / Notes -->
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">Reason for Movement / Notes</label>
+            <textarea name="reason" rows="3" placeholder="Specify reason (e.g. Inter-regional transfer, department rotation, office overhaul, repair return)" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem; font-family: inherit;"></textarea>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px;">
+            <a href="{% url 'assets:asset_sync_workspace' %}" style="padding: 10px 20px; background: #f1f5f9; color: #475569; text-decoration: none; border-radius: 6px; font-size: 0.9rem; font-weight: 500;">Cancel</a>
+            <button type="submit" style="padding: 10px 20px; background: #0f172a; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500;">Process Transfer</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

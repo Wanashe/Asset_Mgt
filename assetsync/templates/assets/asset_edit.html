@@ -1,0 +1,120 @@
+{% extends 'assets/base.html' %}
+
+{% block content %}
+<div style="max-width: 700px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; border: 1px solid #e2e8f0;">
+    <h2 style="font-size: 1.5rem; color: #1e293b; margin-bottom: 5px;">Edit Asset Item</h2>
+    <p style="color: #64748b; margin-bottom: 25px; font-size: 0.9rem;">Update information for {{ asset.asset_tag }}</p>
+
+    <form method="POST" action="{% url 'assets:asset_edit' asset.id %}">
+        {% csrf_token %}
+        
+        <!-- Row 1: Asset Tag (Compulsory) & Serial Number (Optional) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">Asset Tag / Number <span style="color: #dc2626;">*</span></label>
+                <input type="text" name="asset_tag" value="{{ asset.asset_tag }}" required style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem;">
+            </div>
+            <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">Serial Number <span style="color: #94a3b8; font-weight: 400;">(Optional)</span></label>
+                <input type="text" name="serial_number" value="{{ asset.serial_number|default:'' }}" placeholder="e.g. SN-987654" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem;">
+            </div>
+        </div>
+
+        <!-- Row 2: Description & Category -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">Description / Item Name</label>
+                <input type="text" name="name" value="{{ asset.name }}" required style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem;">
+            </div>
+            <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">Category</label>
+                <select name="category" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem;">
+                    <option value="Furniture" {% if asset.category == 'Furniture' %}selected{% endif %}>Furniture (Desks, Chairs, Cabinets)</option>
+                    <option value="Appliance" {% if asset.category == 'Appliance' %}selected{% endif %}>Appliances (Heaters, Fans, Microwave)</option>
+                    <option value="Electronics" {% if asset.category == 'Electronics' %}selected{% endif %}>Electronics &amp; IT Equipment</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Row 3: Region & Department -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">ZESA Region <span style="color: #dc2626;">*</span></label>
+                <select name="region" required style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem;">
+                    <option value="Harare" {% if asset.region == 'Harare' %}selected{% endif %}>Harare Region (based in Harare)</option>
+                    <option value="Northern" {% if asset.region == 'Northern' %}selected{% endif %}>Northern Region (based in Chinhoyi)</option>
+                    <option value="Southern" {% if asset.region == 'Southern' %}selected{% endif %}>Southern Region (based in Gweru)</option>
+                    <option value="Eastern" {% if asset.region == 'Eastern' %}selected{% endif %}>Eastern Region (based in Mutare)</option>
+                    <option value="Western" {% if asset.region == 'Western' %}selected{% endif %}>Western Region (based in Bulawayo)</option>
+                </select>
+            </div>
+            <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">Department</label>
+                <select name="department" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem;">
+                    <option value="IT" {% if asset.department == 'IT' %}selected{% endif %}>IT Department</option>
+                    <option value="Finance" {% if asset.department == 'Finance' %}selected{% endif %}>Finance</option>
+                    <option value="Procurement" {% if asset.department == 'Procurement' %}selected{% endif %}>Procurement</option>
+                    <option value="HR" {% if asset.department == 'HR' %}selected{% endif %}>Human Resources</option>
+                    <option value="Operations" {% if asset.department == 'Operations' %}selected{% endif %}>Operations</option>
+                    <option value="Administration" {% if asset.department == 'Administration' %}selected{% endif %}>Administration</option>
+                    <option value="Executive" {% if asset.department == 'Executive' %}selected{% endif %}>Executive</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Row 4: Physical Location & Office Number -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">Physical Location / Building</label>
+                <select name="current_location" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem;">
+                    <option value="">-- Select Location --</option>
+                    {% for loc in locations %}
+                        <option value="{{ loc.id }}" {% if asset.current_location_id == loc.id %}selected{% endif %}>
+                            {{ loc.building }} - Floor {{ loc.floor }} (Room {{ loc.room_number }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">Office Number</label>
+                <input type="text" name="office_number" value="{{ asset.office_number|default:'' }}" placeholder="e.g. Office 102" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem;">
+            </div>
+        </div>
+
+        <!-- Row 5: Custodian & Condition -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">User / Custodian Name</label>
+                <input type="text" name="assigned_to" value="{{ asset.assigned_to|default:'' }}" placeholder="e.g. John Doe" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem;">
+            </div>
+            <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">Condition / State</label>
+                <select name="condition" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem;">
+                    <option value="Good" {% if asset.condition == 'Good' %}selected{% endif %}>Good</option>
+                    <option value="Fair" {% if asset.condition == 'Fair' %}selected{% endif %}>Fair</option>
+                    <option value="Needs Repair" {% if asset.condition == 'Needs Repair' %}selected{% endif %}>Needs Repair</option>
+                    <option value="Damaged" {% if asset.condition == 'Damaged' %}selected{% endif %}>Damaged</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Row 6: Auditor & Date Checked -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">Checked By (Auditor)</label>
+                <input type="text" name="checked_by" value="{{ asset.checked_by|default:'' }}" placeholder="e.g. Auditor Name" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem;">
+            </div>
+            <div>
+                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">Date Checked</label>
+                <input type="date" name="date_checked" value="{{ asset.date_checked|date:'Y-m-d' }}" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem;">
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px;">
+            <a href="{% url 'assets:asset_sync_workspace' %}" style="padding: 10px 20px; background: #f1f5f9; color: #475569; text-decoration: none; border-radius: 6px; font-size: 0.9rem; font-weight: 500;">Cancel</a>
+            <button type="submit" style="padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500;">Update Asset</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,232 @@
+{% extends 'assets/base.html' %}
+
+{% block content %}
+<style>
+    .state-badge {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .state-good {
+        background-color: #dcfce7;
+        color: #15803d;
+    }
+    .state-fair {
+        background-color: #fef9c3;
+        color: #a16207;
+    }
+    .state-bad {
+        background-color: #fee2e2;
+        color: #b91c1c;
+    }
+    .dept-badge {
+        background-color: #e0f2fe;
+        color: #0369a1;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        display: inline-block;
+    }
+</style>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div>
+        <h2 style="font-size: 1.8rem; color: #1e293b;">Asset Tables</h2>
+        <p style="color: #64748b;">Zimbabwe Electricity Transmission and Distribution Company - Asset Inventory Audit Log</p>
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <a href="{% url 'assets:generate_pdf_report' %}" target="_blank" style="background-color: #dc2626; color: white; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-size: 0.9rem; font-weight: 500;">
+            <i class="fa-solid fa-file-pdf" style="margin-right: 6px;"></i> PDF
+        </a>
+        <a href="{% url 'assets:asset_export_csv' %}" style="background-color: #059669; color: white; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-size: 0.9rem; font-weight: 500;">
+            <i class="fa-solid fa-file-csv" style="margin-right: 6px;"></i> Export CSV
+        </a>
+        <a href="{% url 'assets:asset_transfer' %}" style="background-color: #0f172a; color: white; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-size: 0.9rem; font-weight: 500;">
+            <i class="fa-solid fa-arrows-rotate" style="margin-right: 6px;"></i> Asset Transfer
+        </a>
+        <a href="{% url 'assets:asset_add' %}" style="background-color: #2563eb; color: white; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-size: 0.9rem; font-weight: 500;">
+            <i class="fa-solid fa-plus" style="margin-right: 6px;"></i> Add New Asset
+        </a>
+    </div>
+</div>
+
+<div style="background: white; border-radius: 10px; border: 1px solid #e2e8f0; padding: 20px; overflow-x: auto;">
+    
+    <!-- Filter Controls Bar -->
+    <div style="background: white; border-radius: 10px; border: 1px solid #e2e8f0; padding: 15px 20px; margin-bottom: 20px;">
+        <form method="GET" action="{% url 'assets:asset_sync_workspace' %}" style="display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end;">
+            
+            <!-- Search Query (Custodian, Office, Dept, Tag, Serial, Name) -->
+            <div style="flex: 1; min-width: 200px;">
+                <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #475569; margin-bottom: 5px;">Search (Custodian, Office, Dept...)</label>
+                <input type="text" name="q" value="{{ search_query }}" placeholder="Search tag, serial, name, custodian, office..." style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; outline: none;">
+            </div>
+
+            <!-- Filter by Region (Functional) -->
+            <div style="flex: 1; min-width: 160px;">
+                <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #475569; margin-bottom: 5px;">Region Filter</label>
+                <select name="region" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; outline: none;">
+                    <option value="">All Regions</option>
+                    <option value="Harare" {% if selected_region == 'Harare' %}selected{% endif %}>Harare Region</option>
+                    <option value="Northern" {% if selected_region == 'Northern' %}selected{% endif %}>Northern Region</option>
+                    <option value="Southern" {% if selected_region == 'Southern' %}selected{% endif %}>Southern Region</option>
+                    <option value="Eastern" {% if selected_region == 'Eastern' %}selected{% endif %}>Eastern Region</option>
+                    <option value="Western" {% if selected_region == 'Western' %}selected{% endif %}>Western Region</option>
+                </select>
+            </div>
+
+            <!-- Filter by Department -->
+            <div style="flex: 1; min-width: 160px;">
+                <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #475569; margin-bottom: 5px;">Department</label>
+                <select name="department" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; outline: none;">
+                    <option value="">All Departments</option>
+                    {% if department_choices %}
+                        {% for key, val in department_choices %}
+                            <option value="{{ key }}" {% if selected_department == key %}selected{% endif %}>{{ val }}</option>
+                        {% endfor %}
+                    {% else %}
+                        <option value="IT" {% if selected_department == 'IT' %}selected{% endif %}>IT Department</option>
+                        <option value="Finance" {% if selected_department == 'Finance' %}selected{% endif %}>Finance</option>
+                        <option value="Procurement" {% if selected_department == 'Procurement' %}selected{% endif %}>Procurement</option>
+                        <option value="HR" {% if selected_department == 'HR' %}selected{% endif %}>Human Resources</option>
+                        <option value="Operations" {% if selected_department == 'Operations' %}selected{% endif %}>Operations</option>
+                        <option value="Administration" {% if selected_department == 'Administration' %}selected{% endif %}>Administration</option>
+                        <option value="Executive" {% if selected_department == 'Executive' %}selected{% endif %}>Executive</option>
+                    {% endif %}
+                </select>
+            </div>
+
+            <!-- Filter by Condition / State -->
+            <div style="flex: 1; min-width: 140px;">
+                <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #475569; margin-bottom: 5px;">State / Condition</label>
+                <select name="condition" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; outline: none;">
+                    <option value="">All Conditions</option>
+                    {% if condition_choices %}
+                        {% for key, val in condition_choices %}
+                            <option value="{{ key }}" {% if selected_condition == key %}selected{% endif %}>{{ val }}</option>
+                        {% endfor %}
+                    {% else %}
+                        <option value="Good" {% if selected_condition == 'Good' %}selected{% endif %}>Good</option>
+                        <option value="Fair" {% if selected_condition == 'Fair' %}selected{% endif %}>Fair</option>
+                        <option value="Needs Repair" {% if selected_condition == 'Needs Repair' %}selected{% endif %}>Needs Repair</option>
+                        <option value="Damaged" {% if selected_condition == 'Damaged' %}selected{% endif %}>Damaged</option>
+                    {% endif %}
+                </select>
+            </div>
+
+            <!-- Filter by Checked Date -->
+            <div style="flex: 1; min-width: 140px;">
+                <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #475569; margin-bottom: 5px;">Date Checked</label>
+                <input type="date" name="date_checked" value="{{ selected_date }}" style="width: 100%; padding: 7px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.85rem; outline: none;">
+            </div>
+
+            <!-- Submit & Reset Buttons -->
+            <div style="display: flex; gap: 8px;">
+                <button type="submit" style="background-color: #2563eb; color: white; padding: 8px 16px; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+                    <i class="fa-solid fa-filter" style="margin-right: 5px;"></i> Filter
+                </button>
+                {% if search_query or selected_region or selected_department or selected_condition or selected_date %}
+                    <a href="{% url 'assets:asset_sync_workspace' %}" style="background-color: #f1f5f9; color: #475569; padding: 8px 14px; border-radius: 6px; font-size: 0.85rem; text-decoration: none; font-weight: 500; display: inline-flex; align-items: center;">
+                        Clear
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Search / Allocation Count Summary Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 20px; margin-bottom: 20px;">
+        <div>
+            <span style="font-size: 0.95rem; color: #334155; font-weight: 500;">
+                <i class="fa-solid fa-magnifying-glass" style="margin-right: 6px; color: #2563eb;"></i>
+                {% if search_query %}Matching Search: <strong>"{{ search_query }}"</strong>{% else %}Showing Inventory Records{% endif %}
+                {% if selected_region %}<span style="color: #64748b;">[Region: {{ selected_region }}]</span>{% endif %}
+                {% if selected_department %}<span style="color: #64748b;">[Dept: {{ selected_department }}]</span>{% endif %}
+            </span>
+        </div>
+        <div style="background: #2563eb; color: white; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.85rem;">
+            Allocated Assets: {{ total_matching_assets }}
+        </div>
+    </div>
+
+    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+        <thead>
+            <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0; color: #475569;">
+                <th style="padding: 12px;">Asset Tag</th>
+                <th style="padding: 12px;">Serial Number</th>
+                <th style="padding: 12px;">Description</th>
+                <th style="padding: 12px;">Department</th>
+                <th style="padding: 12px;">Audited Location</th>
+                <th style="padding: 12px;">State</th>
+                <th style="padding: 12px;">User's Name</th>
+                <th style="padding: 12px;">Checked By</th>
+                <th style="padding: 12px;">Date</th>
+                <th style="padding: 12px; text-align: center;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for asset in assets %}
+            <tr style="border-bottom: 1px solid #e2e8f0;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                <td style="padding: 12px; font-weight: 600; color: #2563eb;">
+                    {{ asset.asset_tag|default:"-" }}
+                </td>
+                <td style="padding: 12px; color: #64748b;">
+                    {{ asset.serial_number|default:"-" }}
+                </td>
+                <td style="padding: 12px; color: #0f172a; font-weight: 500;">
+                    {{ asset.name|default:"-" }}
+                </td>
+                
+                <!-- Department Allocation Badge -->
+                <td style="padding: 12px;">
+                    <span class="dept-badge">
+                        <i class="fa-solid fa-building" style="margin-right: 4px;"></i>{{ asset.department|default:"Administration" }}
+                    </span>
+                </td>
+                
+                <!-- Audited Physical Location & Office Number -->
+                <td style="padding: 12px;">
+                    <span style="color: #334155; font-weight: 500;">
+                        {% if asset.office_number %}Office {{ asset.office_number }}{% endif %}
+                        {% if asset.current_location %}
+                            <small style="color: #64748b; display: block;">{{ asset.current_location }}</small>
+                        {% endif %}
+                        {% if not asset.office_number and not asset.current_location %}-{% endif %}
+                    </span>
+                </td>
+
+                <td style="padding: 12px;">
+                    <span class="state-badge {% if asset.condition == 'Good' %}state-good{% elif asset.condition == 'Fair' %}state-fair{% else %}state-bad{% endif %}">
+                        {{ asset.condition|default:"Good" }}
+                    </span>
+                </td>
+                <td style="padding: 12px;">{{ asset.assigned_to|default:"-" }}</td>
+                <td style="padding: 12px;">{{ asset.checked_by|default:"-" }}</td>
+                <td style="padding: 12px;">{{ asset.date_checked|default:asset.purchase_date|default:"-" }}</td>
+                <td style="padding: 12px; text-align: center; white-space: nowrap;">
+                    <a href="{% url 'assets:asset_transfer_item' asset.id %}" style="color: #0f172a; margin-right: 8px; text-decoration: none;" title="Transfer Asset">
+                        <i class="fa-solid fa-arrows-rotate"></i> Transfer
+                    </a>
+                    <a href="{% url 'assets:asset_edit' asset.id %}" style="color: #2563eb; margin-right: 8px; text-decoration: none;">
+                        <i class="fa-solid fa-pen-to-square"></i> Edit
+                    </a>
+                    <a href="{% url 'assets:asset_delete' asset.id %}" onclick="return confirm('Delete this asset entry?');" style="color: #ef4444; text-decoration: none;">
+                        <i class="fa-solid fa-trash"></i> Delete
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="10" style="padding: 30px; text-align: center; color: #64748b;">
+                    <i class="fa-solid fa-folder-open" style="font-size: 2rem; margin-bottom: 10px; display: block; color: #94a3b8;"></i>
+                    No assets recorded or found matching your filter criteria. Click <strong>Add New Asset</strong> to register items.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
