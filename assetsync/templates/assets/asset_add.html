@@ -62,20 +62,37 @@
             </div>
         </div>
 
-        <!-- Row 4: Physical Location & Office Number -->
+        <!-- Row 4: Physical Location & Audited Station/Office -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
             <div>
-                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">Physical Location / Building</label>
+                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">Room / Floor Record</label>
                 <select name="current_location" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem;">
-                    <option value="">-- Select Location --</option>
+                    <option value="">-- Select Room (Optional) --</option>
                     {% for loc in locations %}
-                        <option value="{{ loc.id }}">{{ loc.building }} - Floor {{ loc.floor }} (Room {{ loc.room_number }})</option>
+                        <option value="{{ loc.id }}">{{ loc.get_building_display }} - Floor {{ loc.floor }} (Room {{ loc.room_number }})</option>
                     {% endfor %}
                 </select>
             </div>
             <div>
-                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">Audited Office No.</label>
-                <input type="text" name="office_number" placeholder="e.g. 104" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem;">
+                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">Audited Location / Station</label>
+                <select name="office_number" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem;">
+                    <option value="">-- Select Station / Depot --</option>
+                    <option value="Borrowdale">Borrowdale</option>
+                    <option value="Coleford">Coleford</option>
+                    <option value="Glennorah">Glennorah</option>
+                    <option value="GlenView">GlenView</option>
+                    <option value="Kuwadzana">Kuwadzana</option>
+                    <option value="Mabelreign">Mabelreign</option>
+                    <option value="Makoni">Makoni</option>
+                    <option value="Mbare">Mbare</option>
+                    <option value="Mufakose">Mufakose</option>
+                    <option value="Ruwa">Ruwa</option>
+                    <option value="Showgrounds">Showgrounds</option>
+                    <option value="WarrenPark">WarrenPark</option>
+                    <option value="Waterfalls">Waterfalls</option>
+                    <option value="wynne_st">Wynne St (wynne_st)</option>
+                    <option value="Zengeza">Zengeza</option>
+                </select>
             </div>
         </div>
 

@@ -2,13 +2,38 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+# ZESA Building / Location Dropdown Choices
+LOCATION_CHOICES = [
+    ('Borrowdale', 'Borrowdale'),
+    ('Coleford', 'Coleford'),
+    ('Glennorah', 'Glennorah'),
+    ('GlenView', 'GlenView'),
+    ('Kuwadzana', 'Kuwadzana'),
+    ('Mabelreign', 'Mabelreign'),
+    ('Makoni', 'Makoni'),
+    ('Mbare', 'Mbare'),
+    ('Mufakose', 'Mufakose'),
+    ('Ruwa', 'Ruwa'),
+    ('Showgrounds', 'Showgrounds'),
+    ('WarrenPark', 'WarrenPark'),
+    ('Waterfalls', 'Waterfalls'),
+    ('wynne_st', 'Wynne St (wynne_st)'),
+    ('Zengeza', 'Zengeza'),
+]
+
+
 class Location(models.Model):
-    building = models.CharField(max_length=100, default='Main Building')
+    building = models.CharField(
+        max_length=100,
+        choices=LOCATION_CHOICES,
+        default='Borrowdale',
+        verbose_name="Location / Building"
+    )
     floor = models.CharField(max_length=50)  # e.g., "1st Floor"
     room_number = models.CharField(max_length=50)  # e.g., "Room 102"
 
     def __str__(self):
-        return f"{self.room_number} - {self.floor} ({self.building})"
+        return f"{self.room_number}, {self.floor} ({self.get_building_display()})"
 
 
 class Asset(models.Model):
@@ -57,7 +82,13 @@ class Asset(models.Model):
     
     # Audited Physical Location
     current_location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True, related_name='assets')
-    office_number = models.CharField(max_length=50, blank=True, null=True)  # Audited Office / Room Tag
+    office_number = models.CharField(
+        max_length=50,
+        choices=LOCATION_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name="Location / Building"
+    )  # Audited Office / Location Tag
     
     condition = models.CharField(max_length=20, choices=CONDITION_CHOICES, default='Good')
     purchase_date = models.DateField(blank=True, null=True)
@@ -68,7 +99,7 @@ class Asset(models.Model):
     signature = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
-        loc_str = self.office_number or (str(self.current_location) if self.current_location else "Unassigned")
+        loc_str = self.get_office_number_display() if self.office_number else (str(self.current_location) if self.current_location else "Unassigned")
         sn_str = f" [S/N: {self.serial_number}]" if self.serial_number else ""
         return f"{self.name} ({self.asset_tag}){sn_str} [{self.region} / {self.department} / {loc_str}]"
 
@@ -104,14 +135,14 @@ class AssetTransfer(models.Model):
     from_region = models.CharField(max_length=50, choices=Asset.REGION_CHOICES, blank=True, null=True)
     from_department = models.CharField(max_length=50, choices=Asset.DEPARTMENT_CHOICES, blank=True, null=True)
     from_location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True, related_name='transfers_from')
-    from_office = models.CharField(max_length=50, blank=True, null=True)
+    from_office = models.CharField(max_length=50, choices=LOCATION_CHOICES, blank=True, null=True)
     from_person = models.CharField(max_length=100, blank=True, null=True)
     
     # Transfer Destination
     to_region = models.CharField(max_length=50, choices=Asset.REGION_CHOICES, blank=True, null=True)
     to_department = models.CharField(max_length=50, choices=Asset.DEPARTMENT_CHOICES, blank=True, null=True)
     to_location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True, related_name='transfers_to')
-    to_office = models.CharField(max_length=50, blank=True, null=True)
+    to_office = models.CharField(max_length=50, choices=LOCATION_CHOICES, blank=True, null=True)
     to_person = models.CharField(max_length=100, blank=True, null=True)
     
     reason = models.TextField(blank=True, null=True)

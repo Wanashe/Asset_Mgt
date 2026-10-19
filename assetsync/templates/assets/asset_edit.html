@@ -62,22 +62,39 @@
             </div>
         </div>
 
-        <!-- Row 4: Physical Location & Office Number -->
+        <!-- Row 4: Room Record & Audited Location/Station -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
             <div>
-                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">Physical Location / Building</label>
+                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">Room / Floor Record</label>
                 <select name="current_location" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem;">
-                    <option value="">-- Select Location --</option>
+                    <option value="">-- Select Room (Optional) --</option>
                     {% for loc in locations %}
                         <option value="{{ loc.id }}" {% if asset.current_location_id == loc.id %}selected{% endif %}>
-                            {{ loc.building }} - Floor {{ loc.floor }} (Room {{ loc.room_number }})
+                            {{ loc.get_building_display }} - Floor {{ loc.floor }} (Room {{ loc.room_number }})
                         </option>
                     {% endfor %}
                 </select>
             </div>
             <div>
-                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">Office Number</label>
-                <input type="text" name="office_number" value="{{ asset.office_number|default:'' }}" placeholder="e.g. Office 102" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem;">
+                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">Audited Location / Station</label>
+                <select name="office_number" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem;">
+                    <option value="">-- Select Station / Depot --</option>
+                    <option value="Borrowdale" {% if asset.office_number == 'Borrowdale' %}selected{% endif %}>Borrowdale</option>
+                    <option value="Coleford" {% if asset.office_number == 'Coleford' %}selected{% endif %}>Coleford</option>
+                    <option value="Glennorah" {% if asset.office_number == 'Glennorah' %}selected{% endif %}>Glennorah</option>
+                    <option value="GlenView" {% if asset.office_number == 'GlenView' %}selected{% endif %}>GlenView</option>
+                    <option value="Kuwadzana" {% if asset.office_number == 'Kuwadzana' %}selected{% endif %}>Kuwadzana</option>
+                    <option value="Mabelreign" {% if asset.office_number == 'Mabelreign' %}selected{% endif %}>Mabelreign</option>
+                    <option value="Makoni" {% if asset.office_number == 'Makoni' %}selected{% endif %}>Makoni</option>
+                    <option value="Mbare" {% if asset.office_number == 'Mbare' %}selected{% endif %}>Mbare</option>
+                    <option value="Mufakose" {% if asset.office_number == 'Mufakose' %}selected{% endif %}>Mufakose</option>
+                    <option value="Ruwa" {% if asset.office_number == 'Ruwa' %}selected{% endif %}>Ruwa</option>
+                    <option value="Showgrounds" {% if asset.office_number == 'Showgrounds' %}selected{% endif %}>Showgrounds</option>
+                    <option value="WarrenPark" {% if asset.office_number == 'WarrenPark' %}selected{% endif %}>WarrenPark</option>
+                    <option value="Waterfalls" {% if asset.office_number == 'Waterfalls' %}selected{% endif %}>Waterfalls</option>
+                    <option value="wynne_st" {% if asset.office_number == 'wynne_st' %}selected{% endif %}>Wynne St (wynne_st)</option>
+                    <option value="Zengeza" {% if asset.office_number == 'Zengeza' %}selected{% endif %}>Zengeza</option>
+                </select>
             </div>
         </div>
 
@@ -113,8 +130,7 @@
         <!-- Form Actions -->
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px;">
             <a href="{% url 'assets:asset_sync_workspace' %}" style="padding: 10px 20px; background: #f1f5f9; color: #475569; text-decoration: none; border-radius: 6px; font-size: 0.9rem; font-weight: 500;">Cancel</a>
-            <button type="submit" style="padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500;">Update Asset</button>
+            <button type="submit" style="padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 0.9rem; font-weight: 500;">Save Changes</button>
         </div>
     </form>
-</div>
 {% endblock %}
