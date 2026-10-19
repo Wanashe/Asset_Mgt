@@ -8,12 +8,12 @@
 
 <!-- Quick Actions / Export Row -->
 <div style="display: flex; gap: 10px; margin-bottom: 25px;">
-    <a href="{% url 'assets:asset_export_csv' %}" style="background-color: #059669; color: white; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-size: 0.9rem; font-weight: 500;">
-        <i class="fa-solid fa-file-csv" style="margin-right: 6px;"></i> Export Full Audit CSV
-    </a>
-    <!-- <a href="{% url 'assets:transfer_history_report' %}" style="background-color: #0f172a; color: white; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-size: 0.9rem; font-weight: 500;">
-        <i class="fa-solid fa-clock-rotate-left" style="margin-right: 6px;"></i> View Full Movement Log
-    </a> -->
+    <a href="{% url 'assets:transfer_export_csv' %}" style="background-color: #059669; color: white; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-size: 0.9rem; font-weight: 500;">
+    <i class="fa-solid fa-file-csv" style="margin-right: 6px;"></i> Export Transfer Report (CSV)
+</a>
+    <!-- <a href="{% url 'assets:transfer_export_pdf' %}" style="background-color: #2563eb; color: white; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-size: 0.9rem; font-weight: 500;">
+    <i class="fa-solid fa-file-pdf" style="margin-right: 6px;"></i> Export Transfer Report (PDF)
+</a> -->
 </div>
 
 <!-- Summary Cards Grid -->
@@ -33,11 +33,11 @@
 
     <!-- Office Allocation Summary -->
     <div style="background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px;">
-        <h3 style="font-size: 1.1rem; color: #0f172a; margin-bottom: 15px;">Top Locations / Offices</h3>
+        <h3 style="font-size: 1.1rem; color: #0f172a; margin-bottom: 15px;">Top Locations / Stations</h3>
         <ul style="list-style: none; padding: 0; margin: 0;">
             {% for office in office_counts %}
             <li style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9;">
-                <span style="font-weight: 500; color: #475569;">Office: {{ office.office_number|default:"Unassigned" }}</span>
+                <span style="font-weight: 500; color: #475569;">Station: {{ office.office_number|default:"Unassigned" }}</span>
                 <span style="font-weight: 700; color: #0f172a;">{{ office.total }} assets</span>
             </li>
             {% endfor %}
@@ -47,27 +47,42 @@
 
 <!-- Recent Asset Movement / Transfer Audit Log Table -->
 <div style="background: white; border-radius: 10px; border: 1px solid #e2e8f0; padding: 20px;">
-    <h3 style="font-size: 1.1rem; color: #0f172a; margin-bottom: 15px;">Recent Asset Transfers</h3>
+    <h3 style="font-size: 1.1rem; color: #0f172a; margin-bottom: 15px;">Recent Asset Transfers & Station Movements</h3>
     <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
         <thead>
             <tr style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0; color: #475569;">
-                <th style="padding: 10px;">Asset Tag</th>
-                <th style="padding: 10px;">Previous Custodian</th>
-                <th style="padding: 10px;">New Custodian</th>
+                <th style="padding: 10px;">Asset Tag & Name</th>
+                <th style="padding: 10px;">Station Movement (From ➔ To)</th>
+                <th style="padding: 10px;">Custodian Change</th>
                 <th style="padding: 10px;">Transfer Reason</th>
+                <th style="padding: 10px;">Date</th>
             </tr>
         </thead>
         <tbody>
             {% for transfer in recent_transfers %}
             <tr style="border-bottom: 1px solid #e2e8f0;">
-                <td style="padding: 10px; font-weight: 600;">{{ transfer.asset.asset_tag|default:"-" }}</td>
-                <td style="padding: 10px;">{{ transfer.from_person|default:"Unassigned" }}</td>
-                <td style="padding: 10px; color: #15803d; font-weight: 600;">{{ transfer.to_person }}</td>
-                <td style="padding: 10px; color: #64748b;">{{ transfer.reason }}</td>
+                <td style="padding: 10px;">
+                    <strong style="color: #0f172a;">{{ transfer.asset.asset_tag|default:"-" }}</strong><br>
+                    <span style="font-size: 0.8rem; color: #64748b;">{{ transfer.asset.name }}</span>
+                </td>
+                <td style="padding: 10px;">
+                    <span style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; color: #334155;">
+                        {{ transfer.get_from_office_display|default:transfer.from_office|default:"Origin" }} 
+                        <strong style="color: #2563eb;">➔</strong> 
+                        {{ transfer.get_to_office_display|default:transfer.to_office|default:"Current" }}
+                    </span>
+                </td>
+                <td style="padding: 10px;">
+                    <span style="color: #64748b;">{{ transfer.from_person|default:"None" }}</span> 
+                    <strong style="color: #2563eb;">➔</strong> 
+                    <span style="color: #15803d; font-weight: 600;">{{ transfer.to_person|default:"None" }}</span>
+                </td>
+                <td style="padding: 10px; color: #64748b;">{{ transfer.reason|default:"No reason specified" }}</td>
+                <td style="padding: 10px; color: #475569; font-size: 0.85rem;">{{ transfer.transferred_at|date:"Y-m-d H:i" }}</td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="4" style="padding: 15px; text-align: center; color: #64748b;">No transfer logs recorded yet.</td>
+                <td colspan="5" style="padding: 20px; text-align: center; color: #64748b;">No transfer logs recorded yet.</td>
             </tr>
             {% endfor %}
         </tbody>

@@ -64,7 +64,7 @@
 
         <!-- Row 4: Physical Location & Audited Station/Office -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-            <div>
+            <!-- <div>
                 <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">Room / Floor Record</label>
                 <select name="current_location" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem;">
                     <option value="">-- Select Room (Optional) --</option>
@@ -72,9 +72,9 @@
                         <option value="{{ loc.id }}">{{ loc.get_building_display }} - Floor {{ loc.floor }} (Room {{ loc.room_number }})</option>
                     {% endfor %}
                 </select>
-            </div>
+            </div> -->
             <div>
-                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;">Audited Location / Station</label>
+                <label style="display: block; font-weight: 500; margin-bottom: 5px; font-size: 0.85rem;"> Location / Station</label>
                 <select name="office_number" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.9rem;">
                     <option value="">-- Select Station / Depot --</option>
                     <option value="Borrowdale">Borrowdale</option>

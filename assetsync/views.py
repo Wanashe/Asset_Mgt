@@ -51,7 +51,7 @@ def asset_sync_workspace(request):
     if search_query:
         assets = assets.filter(
             Q(assigned_to__icontains=search_query) |      # Custodian Name search
-            Q(office_number__icontains=search_query) |     # Office Number search
+            Q(office_number__icontains=search_query) |    # Office Number search
             Q(department__icontains=search_query) |        # Department search
             Q(name__icontains=search_query) |              # Item Description search
             Q(asset_tag__icontains=search_query) |         # Asset Tag search
@@ -252,9 +252,9 @@ def asset_transfer(request, asset_id=None):
 
 
 def asset_export_csv(request):
-    """Exports all asset audit records including Region and Serial Number to a downloadable CSV file."""
+    """Exports all registered assets inventory records to a downloadable CSV file."""
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="ZESA_Asset_Inventory_Audit.csv"'
+    response['Content-Disposition'] = 'attachment; filename="ZESA_Asset_Inventory.csv"'
 
     writer = csv.writer(response)
     writer.writerow([
@@ -288,6 +288,39 @@ def asset_export_csv(request):
             asset.assigned_to or '-',
             asset.checked_by or '-',
             asset.date_checked or asset.purchase_date or '-'
+        ])
+
+    return response
+
+
+def transfer_export_csv(request):
+    """Exports the asset transfer and station movement logs to a downloadable CSV file."""
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="ZESA_Asset_Transfer_Report.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow([
+        'Asset Tag', 
+        'Item Name', 
+        'From Station', 
+        'To Station', 
+        'Previous Custodian', 
+        'New Custodian', 
+        'Transfer Reason', 
+        'Transfer Date'
+    ])
+
+    transfers = AssetTransfer.objects.select_related('asset').all().order_by('-transferred_at')
+    for transfer in transfers:
+        writer.writerow([
+            transfer.asset.asset_tag,
+            transfer.asset.name,
+            transfer.get_from_office_display() or transfer.from_office or 'Origin',
+            transfer.get_to_office_display() or transfer.to_office or 'Current',
+            transfer.from_person or 'None',
+            transfer.to_person or 'None',
+            transfer.reason or 'No reason specified',
+            transfer.transferred_at.strftime('%Y-%m-%d %H:%M') if transfer.transferred_at else ''
         ])
 
     return response
